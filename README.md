@@ -1,6 +1,6 @@
 # JWT Client
 
-This project demonstrates a simple Spring Boot application that obtains OAuth tokens from an external provider and uses them to call other services. Tokens are cached in Redis and refreshed automatically when needed.
+This project demonstrates a simple Spring Boot application that obtains JWT Auth tokens from an external provider and uses them to call other services. Tokens are cached in Redis and refreshed automatically when needed.
 
 ## How it works
 
