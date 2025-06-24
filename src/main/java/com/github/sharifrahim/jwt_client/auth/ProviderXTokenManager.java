@@ -1,5 +1,15 @@
 package com.github.sharifrahim.jwt_client.auth;
 
+/**
+ * Token manager implementation for ProviderX.
+ *
+ * <p>This class handles token retrieval and refresh logic using Redis as a cache
+ * and an HTTP endpoint as the token provider.</p>
+ *
+ * @author sharif rahim
+ * @see <a href="https://github.com/sharifrahim">https://github.com/sharifrahim</a>
+ */
+
 import java.time.Duration;
 import java.util.Map;
 
@@ -7,8 +17,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.client.RestTemplate;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Slf4j
 public class ProviderXTokenManager implements TokenManager {
 
     private final StringRedisTemplate redisTemplate;
@@ -35,16 +47,20 @@ public class ProviderXTokenManager implements TokenManager {
         String refreshTokenKey = "providerX:refresh_token";
         String token = redisTemplate.opsForValue().get(accessTokenKey);
         if (token != null) {
+            log.debug("Using cached access token");
             return token;
         }
         String refreshToken = redisTemplate.opsForValue().get(refreshTokenKey);
         if (refreshToken != null) {
+            log.debug("Refreshing access token using refresh token");
             return refreshToken(refreshToken, accessTokenKey, refreshTokenKey);
         }
+        log.debug("Fetching new access and refresh tokens");
         return fetchNewTokens(accessTokenKey, refreshTokenKey);
     }
 
     private String fetchNewTokens(String accessTokenKey, String refreshTokenKey) {
+        log.debug("Requesting new tokens from providerX");
         Map<String, String> request = Map.of(
                 "client_id", clientId,
                 "client_secret", clientSecret,
@@ -55,6 +71,7 @@ public class ProviderXTokenManager implements TokenManager {
     }
 
     private String refreshToken(String refreshToken, String accessTokenKey, String refreshTokenKey) {
+        log.debug("Requesting token refresh from providerX");
         Map<String, String> request = Map.of(
                 "refresh_token", refreshToken,
                 "grant_type", "refresh_token",
@@ -66,6 +83,7 @@ public class ProviderXTokenManager implements TokenManager {
     }
 
     private String storeTokensFromResponse(Map<String, Object> response, String accessTokenKey, String refreshTokenKey) {
+        log.debug("Storing tokens from provider response");
         if (response == null) {
             throw new IllegalStateException("No token response from provider");
         }
